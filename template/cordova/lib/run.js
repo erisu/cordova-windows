@@ -44,7 +44,7 @@ module.exports.run = function (options) {
         'phone': Boolean,
         'win': Boolean,
         'win10tools': Boolean
-    }, { 'r': '--release' }, options.argv, 0);
+    }, {'r': '--release'}, options.argv, 0);
 
     // Validate args
     if (options.debug && options.release) {
