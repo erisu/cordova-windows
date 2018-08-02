@@ -26,7 +26,7 @@ var prepare = require('./prepare');
 var pckage = require('./package');
 var MSBuildTools = require('./MSBuildTools');
 var AppxManifest = require('./AppxManifest');
-var ConfigParser = require('./ConfigParser');
+var ConfigParser = require('./config/WindowsConfigParser');
 var fs = require('fs');
 
 var events = require('cordova-common').events;

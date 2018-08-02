@@ -26,13 +26,13 @@ var CordovaError = require('cordova-common').CordovaError;
 
 var ConfigParser, MSBuildTools, Version;
 try {
-    ConfigParser = require('../../template/cordova/lib/ConfigParser');
+    ConfigParser = require('../../template/cordova/lib/config/WindowsConfigParser');
     MSBuildTools = require('../../template/cordova/lib/MSBuildTools');
     Version = require('../../template/cordova/lib/Version');
 } catch (ex) {
     // If previous import fails, we're probably running this script
     // from installed platform and the module location is different.
-    ConfigParser = require('./ConfigParser');
+    ConfigParser = require('./config/WindowsConfigParser');
     MSBuildTools = require('./MSBuildTools');
     Version = require('./Version');
 }

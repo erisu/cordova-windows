@@ -26,7 +26,9 @@ var Version = require('./Version');
 var MRTImage = require('./MRTImage');
 var AppxManifest = require('./AppxManifest');
 var MSBuildTools = require('./MSBuildTools');
-var ConfigParser = require('./ConfigParser');
+
+const WindowsConfigParser = require('./config/WindowsConfigParser');
+
 var events = require('cordova-common').events;
 var xmlHelpers = require('cordova-common').xmlHelpers;
 var FileUpdater = require('cordova-common').FileUpdater;
@@ -59,14 +61,14 @@ var SPLASH_SCREEN_PHONE_TARGET_NAME = 'SplashScreenPhone';
 /** Note: this is only for backward compatibility, since it is being called directly from windows_parser */
 module.exports.applyPlatformConfig = function () {
     var projectRoot = path.join(__dirname, '../..');
-    var appConfig = new ConfigParser(path.join(projectRoot, '../../config.xml'));
+    const appConfig = new WindowsConfigParser(path.join(projectRoot, '../../config.xml'));
     updateProjectAccordingTo(appConfig);
     copyImages(appConfig, projectRoot);
 };
 
 module.exports.updateBuildConfig = function (buildConfig) {
     var projectRoot = path.join(__dirname, '../..');
-    var config = new ConfigParser(path.join(projectRoot, 'config.xml'));
+    const config = new WindowsConfigParser(path.join(projectRoot, 'config.xml'));
 
     // if no buildConfig is provided dont do anything
     buildConfig = buildConfig || {};
@@ -641,7 +643,7 @@ module.exports.clean = function (options) {
         return Q();
     }
 
-    var projectConfig = new ConfigParser(this.locations.configXml);
+    const projectConfig = new WindowsConfigParser(this.locations.configXml);
 
     var self = this;
     return Q().then(function () {
@@ -727,7 +729,7 @@ function updateConfigFilesFrom (sourceConfig, configMunger, locations) {
 
     events.emit('verbose', 'Merging project\'s config.xml into platform-specific windows config.xml');
     // Merge changes from app's config.xml into platform's one
-    var config = new ConfigParser(ownConfig);
+    const config = new WindowsConfigParser(ownConfig);
     xmlHelpers.mergeXml(sourceConfig.doc.getroot(),
         config.doc.getroot(), 'windows', /* clobber= */true);
 

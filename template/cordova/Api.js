@@ -25,7 +25,7 @@ var CordovaLogger = require('cordova-common').CordovaLogger;
 var PlatformMunger = require('./lib/ConfigChanges.js').PlatformMunger;
 var PlatformJson = require('cordova-common').PlatformJson;
 var PluginInfo = require('./lib/PluginInfo').PluginInfo;
-var ConfigParser = require('./lib/ConfigParser');
+var ConfigParser = require('./lib/config/WindowsConfigParser');
 var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 
 var PLATFORM = 'windows';

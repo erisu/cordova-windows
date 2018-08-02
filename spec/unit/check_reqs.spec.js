@@ -24,7 +24,7 @@ var binPath = '../../bin';
 var et = require('elementtree');
 var xml = require('cordova-common').xmlHelpers;
 var TEST_XML = '<?xml version="1.0" encoding="UTF-8"?><widget/>';
-var ConfigParser = require('../../template/cordova/lib/ConfigParser');
+var ConfigParser = require('../../template/cordova/lib/config/WindowsConfigParser');
 var check_reqs = rewire(path.join(binPath, 'lib/check_reqs.js'));
 
 describe('check_reqs module', function () {

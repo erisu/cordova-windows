@@ -20,7 +20,7 @@
 // requires
 var path = require('path');
 var et = require('elementtree');
-var ConfigParser = require('./ConfigParser.js');
+var ConfigParser = require('./config/WindowsConfigParser.js');
 var nopt = require('nopt');
 
 var spawn = require('cordova-common').superspawn.spawn;
