@@ -60,7 +60,7 @@ describe('WindowsConfigParser', () => {
             expect(config.getFileResources('windows').every(hasArchPropertyDefined)).toBeTruthy();
         });
     });
-    
+
     describe('getAllMinMaxUAPVersions method', () => {
         it('should correctly transform all versions as a baseline.', () => {
             spyOn(config, 'getMatchingPreferences').and.returnValue([
