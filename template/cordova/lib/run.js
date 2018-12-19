@@ -42,8 +42,7 @@ module.exports.run = function (options) {
     var args = nopt({
         'archs': [String],
         'phone': Boolean,
-        'win': Boolean,
-        'win10tools': Boolean
+        'win': Boolean
     }, {'r': '--release'}, options.argv, 0);
 
     // Validate args
@@ -59,7 +58,7 @@ module.exports.run = function (options) {
 
     // Get build/deploy options
     var buildType = options.release ? 'release' : 'debug';
-    
+
     // CB-11478 Allow to specify 'archs' parameter as either cli or platform
     // option i.e. 'cordova run --archs' vs. 'cordova run -- --archs'
     var archs = options.archs || args.archs || ['anycpu'];
