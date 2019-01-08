@@ -31,6 +31,7 @@ var CordovaError = require('cordova-common').CordovaError;
 module.exports.getPackage = function (buildtype, buildArch) {
     var projectType = 'windows10'; // TODO remove below
     var appPackages = path.resolve(path.join(__dirname, '..', '..', 'AppPackages'));
+
     // reject promise if AppPackages folder doesn't exist
     if (!fs.existsSync(appPackages)) {
         return Q.reject('AppPackages folder doesn\'t exist' + appPackages);

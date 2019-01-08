@@ -460,7 +460,7 @@ describe('windows project handler', function () {
         });
 
         describe('of <js-module> elements', function () {
-            var jsModule = {src: 'www/dummyplugin.js'};
+            var jsModule = { src: 'www/dummyplugin.js' };
             var wwwDest, platformWwwDest;
 
             var install = PluginHandler.getInstaller('js-module');
@@ -472,7 +472,7 @@ describe('windows project handler', function () {
             });
 
             it('Test #028 : should put module to both www and platform_www when options.usePlatformWww flag is specified', function () {
-                install(jsModule, dummyPluginInfo, dummyProject, {usePlatformWww: true});
+                install(jsModule, dummyPluginInfo, dummyProject, { usePlatformWww: true });
                 expect(fs.writeFileSync).toHaveBeenCalledWith(wwwDest, jasmine.any(String), 'utf-8');
                 expect(fs.writeFileSync).toHaveBeenCalledWith(platformWwwDest, jasmine.any(String), 'utf-8');
             });
@@ -485,7 +485,7 @@ describe('windows project handler', function () {
         });
 
         describe('of <asset> elements', function () {
-            var asset = {src: 'www/dummyplugin.js', target: 'foo/dummy.js'};
+            var asset = { src: 'www/dummyplugin.js', target: 'foo/dummy.js' };
             var wwwDest; /* eslint no-unused-vars : 0 */
             var platformWwwDest; /* eslint no-unused-vars : 0 */
             var install = PluginHandler.getInstaller('asset');
@@ -497,7 +497,7 @@ describe('windows project handler', function () {
             });
 
             it('Test #029 : should put asset to both www and platform_www when options.usePlatformWww flag is specified', function () {
-                install(asset, dummyPluginInfo, dummyProject, {usePlatformWww: true});
+                install(asset, dummyPluginInfo, dummyProject, { usePlatformWww: true });
                 expect(copyFileSpy).toHaveBeenCalledWith(dummyPluginInfo.dir, asset.src, dummyProject.www, asset.target);
                 expect(copyFileSpy).toHaveBeenCalledWith(dummyPluginInfo.dir, asset.src, dummyProject.platformWww, asset.target);
             });
@@ -583,7 +583,7 @@ describe('windows project handler', function () {
                 });
                 var path = 'ItemGroup/Content';
                 var incText = resourcefiles[0].target;
-                var targetConditions = {versions: undefined, deviceTarget: undefined, arch: 'x86'};
+                var targetConditions = { versions: undefined, deviceTarget: undefined, arch: 'x86' };
                 validateUninstalledProjects('resource-file', resourcefiles[0], path, incText, targetConditions, ['all']);
             });
 
@@ -595,7 +595,7 @@ describe('windows project handler', function () {
                 });
                 var path = 'ItemGroup/Content';
                 var incText = resourcefiles[1].target;
-                var targetConditions = {versions: '>=8.1', deviceTarget: undefined, arch: undefined};
+                var targetConditions = { versions: '>=8.1', deviceTarget: undefined, arch: undefined };
                 validateUninstalledProjects('resource-file', resourcefiles[1], path, incText, targetConditions, ['windows', 'phone', 'windows10']);
             });
 
@@ -607,7 +607,7 @@ describe('windows project handler', function () {
                 });
                 var path = 'ItemGroup/Content';
                 var incText = resourcefiles[2].target;
-                var targetConditions = {versions: undefined, deviceTarget: 'phone', arch: undefined};
+                var targetConditions = { versions: undefined, deviceTarget: 'phone', arch: undefined };
                 validateUninstalledProjects('resource-file', resourcefiles[2], path, incText, targetConditions, ['phone']);
             });
 
@@ -618,7 +618,7 @@ describe('windows project handler', function () {
                 });
                 var path = 'ItemGroup/Content';
                 var incText = resourcefiles[3].target;
-                var targetConditions = {versions: '8.0', deviceTarget: 'windows', arch: 'x64'};
+                var targetConditions = { versions: '8.0', deviceTarget: 'windows', arch: 'x64' };
                 validateUninstalledProjects('resource-file', resourcefiles[3], path, incText, targetConditions, ['windows8']);
             });
 
@@ -630,7 +630,7 @@ describe('windows project handler', function () {
                 });
                 var path = 'ItemGroup/Content';
                 var incText = computeResourcePath(resourcereferencefiles[0]);
-                var targetConditions = {versions: undefined, deviceTarget: undefined, arch: 'x86'};
+                var targetConditions = { versions: undefined, deviceTarget: undefined, arch: 'x86' };
                 validateUninstalledProjects('resource-file', resourcereferencefiles[0], path, incText, targetConditions, ['all']);
             });
             it('Test #036 : should remove from correct project files when conditions specified with reference', function () {
@@ -641,7 +641,7 @@ describe('windows project handler', function () {
                 });
                 var path = 'ItemGroup/Content';
                 var incText = computeResourcePath(resourcereferencefiles[1]);
-                var targetConditions = {versions: '>=8.1', deviceTarget: undefined, arch: undefined};
+                var targetConditions = { versions: '>=8.1', deviceTarget: undefined, arch: undefined };
                 validateUninstalledProjects('resource-file', resourcereferencefiles[1], path, incText, targetConditions, ['windows', 'phone', 'windows10']);
             });
 
@@ -653,7 +653,7 @@ describe('windows project handler', function () {
                 });
                 var path = 'ItemGroup/Content';
                 var incText = computeResourcePath(resourcereferencefiles[2]);
-                var targetConditions = {versions: undefined, deviceTarget: 'phone', arch: undefined};
+                var targetConditions = { versions: undefined, deviceTarget: 'phone', arch: undefined };
                 validateUninstalledProjects('resource-file', resourcereferencefiles[2], path, incText, targetConditions, ['phone']);
             });
 
@@ -665,7 +665,7 @@ describe('windows project handler', function () {
                 });
                 var path = 'ItemGroup/Content';
                 var incText = computeResourcePath(resourcereferencefiles[3]);
-                var targetConditions = {versions: '8.0', deviceTarget: 'windows', arch: 'x64'};
+                var targetConditions = { versions: '8.0', deviceTarget: 'windows', arch: 'x64' };
                 validateUninstalledProjects('resource-file', resourcereferencefiles[3], path, incText, targetConditions, ['windows8']);
             });
         });
@@ -681,7 +681,7 @@ describe('windows project handler', function () {
 
                 var path = 'ItemGroup/SDKReference';
                 var incText = 'TestSDK1, Version=1.0';
-                var targetConditions = {versions: undefined, deviceTarget: undefined, arch: 'x86'};
+                var targetConditions = { versions: undefined, deviceTarget: undefined, arch: 'x86' };
                 validateUninstalledProjects('lib-file', libfiles[0], path, incText, targetConditions, ['all']);
             });
 
@@ -693,7 +693,7 @@ describe('windows project handler', function () {
 
                 var path = 'ItemGroup/SDKReference';
                 var incText = 'TestSDK2, Version=1.0';
-                var targetConditions = {versions: '>=8.1', deviceTarget: undefined, arch: undefined};
+                var targetConditions = { versions: '>=8.1', deviceTarget: undefined, arch: undefined };
                 validateUninstalledProjects('lib-file', libfiles[1], path, incText, targetConditions, ['windows', 'phone', 'windows10']);
             });
 
@@ -705,7 +705,7 @@ describe('windows project handler', function () {
 
                 var path = 'ItemGroup/SDKReference';
                 var incText = 'TestSDK3, Version=1.0';
-                var targetConditions = {versions: undefined, deviceTarget: 'phone', arch: undefined};
+                var targetConditions = { versions: undefined, deviceTarget: 'phone', arch: undefined };
                 validateUninstalledProjects('lib-file', libfiles[2], path, incText, targetConditions, ['phone']);
             });
 
@@ -717,7 +717,7 @@ describe('windows project handler', function () {
 
                 var path = 'ItemGroup/SDKReference';
                 var incText = 'TestSDK4, Version=1.0';
-                var targetConditions = {versions: '8.0', deviceTarget: 'windows', arch: 'x86'};
+                var targetConditions = { versions: '8.0', deviceTarget: 'windows', arch: 'x86' };
                 validateUninstalledProjects('lib-file', libfiles[3], path, incText, targetConditions, ['windows8']);
             });
         });
@@ -738,7 +738,7 @@ describe('windows project handler', function () {
 
                 var path2 = 'ItemGroup/Reference';
                 var incText = 'dummy1';
-                var targetConditions = {versions: undefined, deviceTarget: undefined, arch: 'x64'};
+                var targetConditions = { versions: undefined, deviceTarget: undefined, arch: 'x64' };
                 validateUninstalledProjects('framework', frameworks[0], path2, incText, targetConditions, ['all']);
 
                 process.chdir(path.join(curDir, '..', '..', '..'));
@@ -757,7 +757,7 @@ describe('windows project handler', function () {
 
                 var path2 = 'ItemGroup/Reference';
                 var incText = 'dummy2';
-                var targetConditions = {versions: '>=8.0', deviceTarget: undefined, arch: undefined};
+                var targetConditions = { versions: '>=8.0', deviceTarget: undefined, arch: undefined };
                 validateUninstalledProjects('framework', frameworks[1], path2, incText, targetConditions, ['all']);
                 process.chdir(path.join(curDir, '..', '..', '..'));
             });
@@ -775,7 +775,7 @@ describe('windows project handler', function () {
 
                 var path2 = 'ItemGroup/Reference';
                 var incText = 'dummy3';
-                var targetConditions = {versions: undefined, deviceTarget: 'windows', arch: undefined};
+                var targetConditions = { versions: undefined, deviceTarget: 'windows', arch: undefined };
                 validateUninstalledProjects('framework', frameworks[2], path2, incText, targetConditions, ['windows', 'windows8', 'windows10']);
                 process.chdir(path.join(curDir, '..', '..', '..'));
             });
@@ -793,7 +793,7 @@ describe('windows project handler', function () {
 
                 var path2 = 'ItemGroup/Reference';
                 var incText = 'dummy4';
-                var targetConditions = {versions: '8.1', deviceTarget: 'phone', arch: 'ARM'};
+                var targetConditions = { versions: '8.1', deviceTarget: 'phone', arch: 'ARM' };
                 validateUninstalledProjects('framework', frameworks[3], path2, incText, targetConditions, ['phone']);
                 process.chdir(path.join(curDir, '..', '..', '..'));
             });
@@ -811,7 +811,7 @@ describe('windows project handler', function () {
 
                 var path2 = 'ItemGroup/Reference';
                 var incText = 'dummy5';
-                var targetConditions = {versions: undefined, deviceTarget: 'phone', arch: undefined};
+                var targetConditions = { versions: undefined, deviceTarget: 'phone', arch: undefined };
                 validateUninstalledProjects('framework', frameworks[4], path2, incText, targetConditions, ['phone']);
                 process.chdir(path.join(curDir, '..', '..', '..'));
             });
@@ -829,7 +829,7 @@ describe('windows project handler', function () {
 
                 var path2 = 'ItemGroup/Reference';
                 var incText = 'dummy6';
-                var targetConditions = {versions: '>=8.1', deviceTarget: undefined, arch: undefined};
+                var targetConditions = { versions: '>=8.1', deviceTarget: undefined, arch: undefined };
                 validateUninstalledProjects('framework', frameworks[5], path2, incText, targetConditions, ['windows', 'windows10', 'phone']);
 
                 process.chdir(path.join(curDir, '..', '..', '..'));
@@ -852,7 +852,7 @@ describe('windows project handler', function () {
 
                 var xmlPath = 'ItemGroup/ProjectReference';
                 var incText = winJoin('..', '..', 'plugins', dummyPluginInfo.id, frameworks[6].src);
-                var targetConditions = {versions: undefined, deviceTarget: undefined, arch: 'x64'};
+                var targetConditions = { versions: undefined, deviceTarget: undefined, arch: 'x64' };
                 validateUninstalledProjects('framework', frameworks[6], xmlPath, incText, targetConditions, ['all']);
 
                 process.chdir(path.join(curDir, '..', '..', '..'));
@@ -871,7 +871,7 @@ describe('windows project handler', function () {
                 var xmlPath = 'ItemGroup/ProjectReference';
 
                 var incText = winJoin('..', '..', 'plugins', dummyPluginInfo.id, frameworks[7].src);
-                var targetConditions = {versions: '<8.1', deviceTarget: undefined, arch: undefined};
+                var targetConditions = { versions: '<8.1', deviceTarget: undefined, arch: undefined };
                 validateUninstalledProjects('framework', frameworks[7], xmlPath, incText, targetConditions, ['windows8']);
 
                 process.chdir(path.join(curDir, '..', '..', '..'));
@@ -891,7 +891,7 @@ describe('windows project handler', function () {
                 var xmlPath = 'ItemGroup/ProjectReference';
 
                 var incText = winJoin('..', '..', 'plugins', dummyPluginInfo.id, frameworks[8].src);
-                var targetConditions = {versions: undefined, deviceTarget: 'win', arch: undefined};
+                var targetConditions = { versions: undefined, deviceTarget: 'win', arch: undefined };
                 validateUninstalledProjects('framework', frameworks[8], xmlPath, incText, targetConditions, ['windows', 'windows8', 'windows10']);
 
                 process.chdir(path.join(curDir, '..', '..', '..'));
@@ -911,7 +911,7 @@ describe('windows project handler', function () {
                 var xmlPath = 'ItemGroup/ProjectReference';
 
                 var incText = winJoin('..', '..', 'plugins', dummyPluginInfo.id, frameworks[9].src);
-                var targetConditions = {versions: '8.1', deviceTarget: 'all', arch: 'x86'};
+                var targetConditions = { versions: '8.1', deviceTarget: 'all', arch: 'x86' };
                 validateUninstalledProjects('framework', frameworks[9], xmlPath, incText, targetConditions, ['windows', 'phone']);
 
                 process.chdir(path.join(curDir, '..', '..', '..'));
@@ -919,7 +919,7 @@ describe('windows project handler', function () {
         });
 
         describe('of <js-module> elements', function () {
-            var jsModule = {src: 'www/dummyPlugin.js'};
+            var jsModule = { src: 'www/dummyPlugin.js' };
             var wwwDest, platformWwwDest;
 
             var uninstall = PluginHandler.getUninstaller('js-module');
@@ -938,7 +938,7 @@ describe('windows project handler', function () {
             });
 
             it('Test #047 : should put module to both www and platform_www when options.usePlatformWww flag is specified', function () {
-                uninstall(jsModule, dummyPluginInfo, dummyProject, {usePlatformWww: true});
+                uninstall(jsModule, dummyPluginInfo, dummyProject, { usePlatformWww: true });
                 expect(shell.rm).toHaveBeenCalledWith(jasmine.any(String), wwwDest);
                 expect(shell.rm).toHaveBeenCalledWith(jasmine.any(String), platformWwwDest);
             });
@@ -951,7 +951,7 @@ describe('windows project handler', function () {
         });
 
         describe('of <asset> elements', function () {
-            var asset = {src: 'www/dummyPlugin.js', target: 'foo/dummy.js'};
+            var asset = { src: 'www/dummyPlugin.js', target: 'foo/dummy.js' };
             var wwwDest, platformWwwDest;
             var uninstall = PluginHandler.getUninstaller('asset');
 
@@ -969,7 +969,7 @@ describe('windows project handler', function () {
             });
 
             it('Test #049 : should put module to both www and platform_www when options.usePlatformWww flag is specified', function () {
-                uninstall(asset, dummyPluginInfo, dummyProject, {usePlatformWww: true});
+                uninstall(asset, dummyPluginInfo, dummyProject, { usePlatformWww: true });
                 expect(shell.rm).toHaveBeenCalledWith(jasmine.any(String), wwwDest);
                 expect(shell.rm).toHaveBeenCalledWith(jasmine.any(String), platformWwwDest);
             });

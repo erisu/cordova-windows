@@ -61,8 +61,8 @@ describe('Cordova create and build', function () {
     }
 
     beforeEach(function () {
-        shell.exec(path.join('bin', 'create') + ' "' + projectFolder + '" com.test.app 応用', {silent: silent});
-        shell.exec(prepareScriptPath + '', {silent: silent});
+        shell.exec(path.join('bin', 'create') + ' "' + projectFolder + '" com.test.app 応用', { silent: silent });
+        shell.exec(prepareScriptPath + '', { silent: silent });
     });
 
     afterEach(function () {
@@ -77,19 +77,19 @@ describe('Cordova create and build', function () {
     // default
 
     it('spec.2a should build default (win10) project', function () {
-        shell.exec(buildScriptPath + '', {silent: silent});
+        shell.exec(buildScriptPath + '', { silent: silent });
         _expectSubdirAndFileExist('CordovaApp.Windows10_1.0.0.0_anycpu_debug_Test', 'CordovaApp.Windows10_1.0.0.0_anycpu_debug.appx');
     });
 
     // --archs
 
     it('spec.3a should build project for particular CPU', function () {
-        shell.exec(buildScriptPath + ' --archs=\"x64\"', {silent: silent}); /* eslint no-useless-escape : 0 */
+        shell.exec(buildScriptPath + ' --archs=\"x64\"', { silent: silent }); /* eslint no-useless-escape : 0 */
         _expectSubdirAndFileExist('CordovaApp.Windows10_1.0.0.0_x64_debug_Test', 'CordovaApp.Windows10_1.0.0.0_x64_debug.appx');
     });
 
     it('spec.4a should build project for CPUs separated by whitespaces', function () {
-        shell.exec(buildScriptPath + ' --archs=\"x64 x86 arm anycpu\"', {silent: silent}); /* eslint no-useless-escape : 0 */
+        shell.exec(buildScriptPath + ' --archs=\"x64 x86 arm anycpu\"', { silent: silent }); /* eslint no-useless-escape : 0 */
         _expectSubdirAndFileExist('CordovaApp.Windows10_1.0.0.0_x64_debug_Test', 'CordovaApp.Windows10_1.0.0.0_x64_debug.appx');
         _expectSubdirAndFileExist('CordovaApp.Windows10_1.0.0.0_x86_debug_Test', 'CordovaApp.Windows10_1.0.0.0_x86_debug.appx');
         _expectSubdirAndFileExist('CordovaApp.Windows10_1.0.0.0_arm_debug_Test', 'CordovaApp.Windows10_1.0.0.0_arm_debug.appx');
@@ -114,7 +114,7 @@ describe('Cordova create and build', function () {
 
         api.addPlugin(extensionsPluginInfo)
             .then(function () {
-                shell.exec(buildScriptPath, {silent: silent});
+                shell.exec(buildScriptPath, { silent: silent });
                 _expectSubdirAndFileExist('CordovaApp.Windows10_1.0.0.0_anycpu_debug_Test', 'CordovaApp.Windows10_1.0.0.0_anycpu_debug.appx');
             })
             .catch(fail)
@@ -131,7 +131,7 @@ describe('Cordova create and build', function () {
     // --release (non-bundle)
 
     it('spec.7 should generate appxupload for Windows 10 project non-bundle release build', function () {
-        shell.exec(buildScriptPath + ' --release --archs=\"x64 x86 arm\"', {silent: silent});
+        shell.exec(buildScriptPath + ' --release --archs=\"x64 x86 arm\"', { silent: silent });
         _expectExist(/.*\.appxupload$/, 3);
         // CB-12416 Should build appx in separate dirs for each architecture
         // Should contain a subdirectory for each of the architectures
@@ -143,7 +143,7 @@ describe('Cordova create and build', function () {
 
     // this will be move up again when it is fixed for VS 2017 on AppVeyor
     it('spec.6a should generate appxupload and appxbundle for Windows 10 project bundle release build', function () {
-        shell.exec(buildScriptPath + ' --release --bundle --archs=\"x64 x86 arm\"', {silent: silent});
+        shell.exec(buildScriptPath + ' --release --bundle --archs=\"x64 x86 arm\"', { silent: silent });
         _expectExist(/.*bundle\.appxupload$/, 3);
         _expectSubdirAndFileExist('CordovaApp.Windows10_1.0.0.0_Test', 'CordovaApp.Windows10_1.0.0.0_x64_x86_arm.appxbundle');
     });
