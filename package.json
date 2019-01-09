@@ -26,6 +26,7 @@
   "dependencies": {
     "cordova-common": "^3.0.0",
     "elementtree": "^0.1.7",
+    "fs-extra": "^7.0.1",
     "node-uuid": "^1.4.8",
     "nopt": "^3.0.4",
     "q": "^1.5.1",
