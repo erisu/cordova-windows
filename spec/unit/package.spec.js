@@ -16,167 +16,86 @@
     specific language governing permissions and limitations
     under the License.
 */
-var path = require('path');
-var rewire = require('rewire');
-var shell = require('shelljs');
-var Q = require('q');
-var platformRoot = '../../template';
-var pkgRoot = './template/';
-var pkgPath = path.join(pkgRoot, 'AppPackages');
-var testPkgPath = './spec/unit/fixtures/DummyProject/AppPackages';
-var pkg = rewire(platformRoot + '/cordova/lib/package.js');
+const path = require('path');
+const rewire = require('rewire');
+const fs = require('fs-extra');
 
-var consoleLogOriginal;
+const ROOT_DIR = path.resolve(__dirname, '..', '..');
+const TEMPLATE_DIR = path.join(ROOT_DIR, 'template');
+const pkg = rewire(path.join(TEMPLATE_DIR, 'cordova/lib/package.js'));
+const tempProject = path.join(TEMPLATE_DIR, 'AppPackages');
+const dummyProjectAppPackage = path.join(ROOT_DIR, 'spec', 'unit', 'fixtures', 'DummyProject', 'AppPackages');
 
-beforeEach(function () {
-    // console output suppression
-    consoleLogOriginal = pkg.__get__('console.log');
-    pkg.__set__('console.log', function () {});
+beforeEach(() => {
+    fs.copySync(dummyProjectAppPackage, tempProject);
 });
 
-afterEach(function () {
-    pkg.__set__('console.log', consoleLogOriginal);
+afterEach(() => {
+    fs.removeSync(tempProject);
 });
 
-describe('getPackage method', function () {
-    it('start', function () {
-        shell.rm('-rf', pkgPath);
-        shell.cp('-R', testPkgPath, pkgRoot);
-    });
-
-    it('spec.1 should find windows anycpu debug package', function (done) {
+describe('getPackage method', () => {
+    it('should find windows10 anycpu debug package', () => {
         var rejected = jasmine.createSpy();
 
-        pkg.getPackage('debug', 'anycpu')
-            .then(function (pkgInfo) {
+        return pkg.getPackage('debug', 'anycpu')
+            .then((pkgInfo) => {
                 expect(pkgInfo.type).toBe('windows10');
                 expect(pkgInfo.buildtype).toBe('debug');
                 expect(pkgInfo.arch).toBe('anycpu');
                 expect(pkgInfo.script).toBeDefined();
-            }, function (err) {
-                console.error('foo', err);
-                rejected();
+            }, (err) => {
+                rejected(err);
             })
-            .finally(function () {
+            .finally(() => {
                 expect(rejected).not.toHaveBeenCalled();
-                done();
             });
-    });
-
-    it('spec.2 should find windows phone anycpu debug package', function (done) {
-        var rejected = jasmine.createSpy();
-
-        pkg.getPackage('debug', 'anycpu')
-            .then(function (pkgInfo) {
-                expect(pkgInfo.type).toBe('phone');
-                expect(pkgInfo.buildtype).toBe('debug');
-                expect(pkgInfo.arch).toBe('anycpu');
-                expect(pkgInfo.script).toBeDefined();
-            }, rejected)
-            .finally(function () {
-                expect(rejected).not.toHaveBeenCalled();
-                done();
-            });
-    });
-
-    it('spec.3 should not find windows 10 anycpu debug package', function (done) {
-        var resolved = jasmine.createSpy();
-
-        pkg.getPackage('windows10', 'debug', 'anycpu')
-            .then(resolved)
-            .finally(function () {
-                expect(resolved).not.toHaveBeenCalled();
-                done();
-            });
-    });
-
-    it('spec.4 should not find windows anycpu release package', function (done) {
-        var resolved = jasmine.createSpy();
-
-        pkg.getPackage('windows', 'release', 'anycpu')
-            .then(resolved)
-            .finally(function () {
-                expect(resolved).not.toHaveBeenCalled();
-                done();
-            });
-    });
-
-    it('spec.5 should not find windows x86 debug package', function (done) {
-        var resolved = jasmine.createSpy();
-
-        pkg.getPackage('windows', 'debug', 'x86')
-            .then(resolved)
-            .finally(function () {
-                expect(resolved).not.toHaveBeenCalled();
-                done();
-            });
-    });
-
-    it('end', function () {
-        shell.rm('-rf', pkgPath);
     });
 });
 
-describe('getPackageFileInfo method', function () {
-    it('spec.6 should get file info correctly for wp8 anycpu debug package', function () {
-        var packageFile = path.join(pkgPath, 'CordovaApp.Phone_0.0.1.0_debug_Test', 'CordovaApp.Phone_0.0.1.0_AnyCPU_debug.appxbundle');
+describe('getPackageFileInfo method', () => {
+    it('should get file info correctly for windows10 anycpu debug package', () => {
+        var packageFile = path.join(tempProject, 'CordovaApp.Windows10_0.0.1.0_anycpu_debug_Test', 'CordovaApp.Windows10_0.0.1.0_anycpu_debug.appx');
         var pkgInfo = pkg.getPackageFileInfo(packageFile);
 
-        expect(pkgInfo.type).toBe('phone');
+        expect(pkgInfo.type).toBe('windows10');
         expect(pkgInfo.arch).toBe('anycpu');
         expect(pkgInfo.buildtype).toBe('debug');
     });
 
-    it('spec.7 should get file info correctly for windows anycpu debug package', function () {
-        var packageFile = path.join(pkgPath, 'CordovaApp.Windows_0.0.1.0_anycpu_debug_Test', 'CordovaApp.Windows_0.0.1.0_anycpu_debug.appx');
+    it('should get file info correctly for windows10 x64 release package', () => {
+        var packageFile = path.join(tempProject, 'CordovaApp.Windows10_0.0.1.0_x64_Test', 'CordovaApp.Windows10_0.0.1.0_x64.appx');
         var pkgInfo = pkg.getPackageFileInfo(packageFile);
 
-        expect(pkgInfo.type).toBe('windows');
-        expect(pkgInfo.arch).toBe('anycpu');
-        expect(pkgInfo.buildtype).toBe('debug');
-    });
-
-    it('spec.8 should get file info correctly for windows x64 release package', function () {
-        var packageFile = path.join(pkgPath, 'CordovaApp.Windows_0.0.1.0_x64_Test', 'CordovaApp.Windows_0.0.1.0_x64.appx');
-        var pkgInfo = pkg.getPackageFileInfo(packageFile);
-
-        expect(pkgInfo.type).toBe('windows');
+        expect(pkgInfo.type).toBe('windows10');
         expect(pkgInfo.arch).toBe('x64');
         expect(pkgInfo.buildtype).toBe('release');
     });
 
-    it('spec.9 should get file info correctly for windows x86 release package', function () {
-        var packageFile = path.join(pkgPath, 'CordovaApp.Windows_0.0.1.0_x86_Test', 'CordovaApp.Windows_0.0.1.0_x86.appx');
+    it('spec.9 should get file info correctly for windows10 x86 release package', () => {
+        var packageFile = path.join(tempProject, 'CordovaApp.Windows10_0.0.1.0_x86_Test', 'CordovaApp.Windows10_0.0.1.0_x86.appx');
         var pkgInfo = pkg.getPackageFileInfo(packageFile);
 
-        expect(pkgInfo.type).toBe('windows');
+        expect(pkgInfo.type).toBe('windows10');
         expect(pkgInfo.arch).toBe('x86');
         expect(pkgInfo.buildtype).toBe('release');
     });
 });
 
-describe('getAppId method', function () {
-    it('spec.10 should properly get phoneProductId value from manifest', function (done) {
-        var resolve = jasmine.createSpy();
-
-        Q(pkg.getAppId(pkgRoot))
-            .then(resolve)
-            .finally(function () {
-                expect(resolve).toHaveBeenCalledWith('$guid1$');
-                done();
-            });
+describe('getAppId method', () => {
+    it('should properly get phoneProductId value from manifest', () => {
+        return pkg.getAppId(TEMPLATE_DIR).then((appId) => {
+            expect(appId).toBe('$guid1$');
+        });
     });
 });
 
-describe('getPackageName method', function () {
-    it('spec.11 should properly get Application Id value from manifest', function (done) {
-        var resolve = jasmine.createSpy();
+describe('getPackageName method', () => {
+    it('should properly get Application Id value from manifest', () => {
+        const getPackageName = pkg.__get__('getPackageName');
 
-        Q(pkg.getAppId(pkgRoot))
-            .then(resolve)
-            .finally(function () {
-                expect(resolve).toHaveBeenCalledWith('$guid1$');
-                done();
-            });
+        return getPackageName(TEMPLATE_DIR).then((appId) => {
+            expect(appId).toBe('$guid1$');
+        });
     });
 });

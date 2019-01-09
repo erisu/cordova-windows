@@ -21,7 +21,6 @@ var rewire = require('rewire');
 var et = require('elementtree');
 var xml = require('cordova-common').xmlHelpers;
 var AppxManifest = rewire('../../template/cordova/lib/AppxManifest');
-var Win10AppxManifest = AppxManifest.__get__('Win10AppxManifest');
 var refineColor = AppxManifest.__get__('refineColor');
 
 var WINDOWS_10_MANIFEST = 'template/package.windows10.appxmanifest';
@@ -57,10 +56,6 @@ describe('AppxManifest', function () {
 
         it('Test #002 : should throw if first parameter is not a valid manifest file (no "Package" tag)', function () {
             expect(function () { new AppxManifest('/invalid/manifest'); }).toThrow(); /* eslint no-new : 0 */
-        });
-
-        it('Test #003 : should add ":" to manifest prefix if needed', function () {
-            expect(new AppxManifest(WINDOWS_10_MANIFEST, 'prefix').prefix).toEqual('prefix:');
         });
     });
 
@@ -104,19 +99,6 @@ describe('AppxManifest', function () {
 
         it('Test #008 : should return an AppxManifest instance', function () {
             expect(AppxManifest.get(WINDOWS_10_MANIFEST) instanceof AppxManifest).toBe(true);
-        });
-
-        it('Test #009 : should detect manifest prefix based on "Package" element attributes', function () {
-            expect(AppxManifest.get(WINDOWS_10_MANIFEST).prefix).toEqual('uap:');
-        });
-
-        it('Test #010 : should instantiate either AppxManifest or Windows 10 AppxManifest based on manifest prefix', function () {
-            expect(AppxManifest.get('/no/prefixed').prefix).toEqual('');
-            expect(AppxManifest.get('/no/prefixed') instanceof AppxManifest).toBe(true);
-            expect(AppxManifest.get('/no/prefixed') instanceof Win10AppxManifest).toBe(false);
-
-            expect(AppxManifest.get('/uap/prefixed').prefix).toEqual('uap:');
-            expect(AppxManifest.get('/uap/prefixed') instanceof Win10AppxManifest).toBe(true);
         });
 
         it('Test #011 : should cache AppxManifest instances by default', function () {

@@ -29,27 +29,25 @@ var CordovaError = require('cordova-common').CordovaError;
 // returns folder that contains package with chip architecture,
 // build and project types specified by script parameters
 module.exports.getPackage = function (buildtype, buildArch) {
-    var projectType = 'windows10'; // TODO remove below
     var appPackages = path.resolve(path.join(__dirname, '..', '..', 'AppPackages'));
 
     // reject promise if AppPackages folder doesn't exist
     if (!fs.existsSync(appPackages)) {
         return Q.reject('AppPackages folder doesn\'t exist' + appPackages);
     }
-    // find out and resolve paths for all folders inside AppPackages
-    var pkgDirs = fs.readdirSync(appPackages).map(function (relative) {
-        // resolve path to folder
-        return path.join(appPackages, relative);
-    }).filter(function (pkgDir) {
-        // check that it is a directory
-        return fs.statSync(pkgDir).isDirectory();
-    });
+
+    /**
+     * Find out and resolve paths for all folders inside AppPackages
+     * 1. Resolve the path to folder by mapping
+     * 2. Check that it is a directory by filtering
+     */
+    var pkgDirs = fs.readdirSync(appPackages)
+        .map((relative) => path.join(appPackages, relative))
+        .filter((pkgDir) => fs.statSync(pkgDir).isDirectory());
 
     for (var dirIndex = 0; dirIndex < pkgDirs.length; dirIndex++) {
         var dir = pkgDirs[dirIndex];
-        var packageFiles = fs.readdirSync(dir).filter(function (e) {
-            return e.match('.*.(appx|appxbundle)$');
-        });
+        var packageFiles = fs.readdirSync(dir).filter((e) => e.match('.*.(appx|appxbundle)$'));
 
         for (var pkgIndex = 0; pkgIndex < packageFiles.length; pkgIndex++) {
             var pkgFile = packageFiles[pkgIndex];
@@ -58,7 +56,6 @@ module.exports.getPackage = function (buildtype, buildArch) {
             var pkgInfo = module.exports.getPackageFileInfo(packageFile);
 
             if (pkgInfo &&
-                pkgInfo.type === projectType &&
                 pkgInfo.buildtype === buildtype &&
                 ((pkgInfo.arch === buildArch) ||
                 (pkgInfo.archs && pkgInfo.archs.indexOf(buildArch) > -1))) {
@@ -86,13 +83,14 @@ module.exports.getPackageFileInfo = function (packageFile) {
     // CordovaApp.Phone_0.0.1.0_x86_debug.appxbundle
     // CordovaApp.Windows10_0.0.1.0_x64_x86_arm.appxbundle
 
-    var props = /.*\.(Phone|Windows|Windows10)_((?:\d*\.)*\d*)*((?:_(AnyCPU|x86|x64|ARM)){1,4})(?:(_Debug))?.(appx|appxbundle)$/i.exec(pkgName);
+    var props = /.*\.Windows10_((?:\d*\.)*\d*)*((?:_(AnyCPU|x86|x64|ARM)){1,4})(?:(_Debug))?.(appx|appxbundle)$/i.exec(pkgName);
+
     if (props) {
         return {
-            type: props[1].toLowerCase(), // TODO remove as this can be phone, windows or windows10
-            arch: props[3].toLowerCase().substring(1),
-            archs: props[3].toLowerCase().substring(1).split('_'),
-            buildtype: props[5] ? props[5].substring(1).toLowerCase() : 'release',
+            type: 'windows10',
+            arch: props[2].toLowerCase().substring(1),
+            archs: props[2].toLowerCase().substring(1).split('_'),
+            buildtype: props[4] ? props[4].substring(1).toLowerCase() : 'release',
             appx: packageFile,
             script: path.join(packageFile, '..', 'Add-AppDevPackage.ps1'),
             phoneId: getPackagePhoneProductId(packageFile)
@@ -105,8 +103,10 @@ module.exports.getPackageFileInfo = function (packageFile) {
 // return rejected promise if appxmanifest not valid
 module.exports.getAppId = function (platformPath) {
     try {
-        return AppxManifest.get(path.join(platformPath, 'package.phone.appxmanifest'))
-            .getPhoneIdentity().getPhoneProductId();
+        return Promise.resolve(AppxManifest.get(path.join(platformPath, 'package.windows10.appxmanifest'))
+            .getPhoneIdentity()
+            .getPhoneProductId()
+        );
     } catch (e) {
         throw new Error('Can\'t read appId from phone manifest', e);
     }
@@ -115,12 +115,14 @@ module.exports.getAppId = function (platformPath) {
 // return package name fetched from appxmanifest
 // return rejected promise if appxmanifest not valid
 function getPackageName (platformPath) {
-    // Can reliably read from package.windows.appxmanifest even if targeting Windows 10
+    // Can reliably read from package.windows10.appxmanifest even if targeting Windows 10
     // because the function is only used for desktop deployment, which always has the same
     // package name when uninstalling / reinstalling
     try {
-        return Q.when(AppxManifest.get(path.join(platformPath, 'package.windows.appxmanifest'))
-            .getIdentity().getName());
+        return Promise.resolve(AppxManifest.get(path.join(platformPath, 'package.windows10.appxmanifest'))
+            .getIdentity()
+            .getName()
+        );
     } catch (e) {
         return Q.reject('Can\'t read package name from manifest ' + e);
     }
