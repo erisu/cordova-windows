@@ -34,7 +34,7 @@
 
     <!-- windows -->
     <platform name="windows">
-        <config-file target="package.windows.appxmanifest" parent="/Package">
+        <config-file target="package.windows10.appxmanifest" parent="/Package">
             <Extensions>
                 <Extension Category="windows.activatableClass.inProcessServer">
                     <InProcessServer>

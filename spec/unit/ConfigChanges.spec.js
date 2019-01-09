@@ -39,7 +39,7 @@ var dummyPlugin = path.join(FIXTURES, DUMMY_PLUGIN);
 var configplugin = path.join(FIXTURES, CONFIG_PLUGIN);
 var dummyProjName = 'testProj';
 var windowsProject = path.join(FIXTURES, dummyProjName);
-var windows_testapp_jsproj = path.join(FIXTURES, 'testProj/platforms/windows/CordovaApp.Windows.jsproj');
+var windows_testapp_jsproj = path.join(FIXTURES, 'testProj/platforms/windows/CordovaApp.Windows10.jsproj');
 
 describe('PlatformMunger', function () {
     var munge, munger;
@@ -87,7 +87,7 @@ describe('PlatformMunger', function () {
     });
 });
 
-describe('Capabilities within package.windows.appxmanifest', function () {
+describe('Capabilities within package.windows10.appxmanifest', function () {
 
     var testDir, windowsPlatform, windows10Manifest, dummyPluginInfo, api;
 

@@ -18,11 +18,9 @@
 */
 
 var fs = require('fs');
-var util = require('util');
 var et = require('elementtree');
 var path = require('path');
 var xml = require('cordova-common').xmlHelpers;
-var semver = require('semver');
 
 var UAP_RESTRICTED_CAPS = ['enterpriseAuthentication', 'sharedUserCertificates',
     'documentsLibrary', 'musicLibrary', 'picturesLibrary',
@@ -41,20 +39,7 @@ var KNOWN_ORIENTATIONS = {
     'landscape': ['landscape', 'landscapeFlipped']
 };
 
-var MANIFESTS = {
-    'windows': {
-        '10.0.0': 'package.windows10.appxmanifest'
-    },
-    'phone': {
-        '10.0.0': 'package.windows10.appxmanifest'
-    },
-    'all': {
-        '10.0.0': 'package.windows10.appxmanifest'
-    }
-};
-
-var SUBSTS = ['package.windows10.appxmanifest'];
-var TARGETS = ['windows', 'phone', 'all'];
+const MANIFEST = 'package.windows10.appxmanifest';
 
 /**
  * Store to cache appxmanifest files based on file location
@@ -68,25 +53,21 @@ var manifestCache = {};
  *
  * Wraps an AppxManifest file. Shouldn't be instantiated directly.
  *   AppxManifest.get should be used instead to select proper manifest type
- *   (AppxManifest for Win 8/8.1/Phone 8.1, Win10AppxManifest for Win 10)
+ *   AppxManifest for Win 10
  *
  * @param  {string}  path    Path to appxmanifest to wrap
- * @param  {string}  prefix  A namespace prefix used to prepend some elements.
  *   Depends on manifest type.
  */
-function AppxManifest (path, prefix) {
+function AppxManifest (path) {
     this.path = path;
-    // Append ':' to prefix if needed
-    prefix = prefix || '';
-    this.prefix = (prefix.indexOf(':') === prefix.length - 1) ? prefix : prefix + ':';
     this.doc = xml.parseElementtreeSync(path);
     if (this.doc.getroot().tag !== 'Package') {
         // Some basic validation
         throw new Error(path + ' has incorrect root node name (expected "Package")');
     }
 
-    // Indicates that this manifest is for phone application (either WinPhone 8.1 or Universal Windows 10)
-    this.hasPhoneIdentity = this.prefix === 'uap:' || this.prefix === 'm3:';
+    // Always have the Phone Identity
+    this.hasPhoneIdentity = true;
 }
 
 //  Static read-only property to get capabilities which need to be prefixed with uap
@@ -98,40 +79,28 @@ Object.defineProperty(AppxManifest, 'CapsNeedUapPrefix', {
 
 /**
  * @static
- * @constructs AppxManifest|Win10AppxManifest
+ * @constructs AppxManifest
  *
- * Instantiates a new AppxManifest/Win10AppxManifest class. Chooses which
+ * Instantiates a new AppxManifest class. Chooses which
  *   constructor to use based on xmlns attributes of Package node
  *
  * @param   {String}  fileName  File to create manifest for
  * @param   {Boolean} [ignoreCache=false]  Specifies, whether manifest cache will be
  *   used to return resultant object
  *
- * @return  {AppxManifest|Win10AppxManifest}  Manifest instance
+ * @return  {AppxManifest}  Manifest instance
  */
 AppxManifest.get = function (fileName, ignoreCache) {
+    if (!ignoreCache && manifestCache[fileName]) return manifestCache[fileName];
 
-    if (!ignoreCache && manifestCache[fileName]) {
-        return manifestCache[fileName];
-    }
+    const root = xml.parseElementtreeSync(fileName).getroot();
+    const rootAttributes = Object.keys(root.attrib);
 
-    var root = xml.parseElementtreeSync(fileName).getroot();
-    var prefixes = Object.keys(root.attrib)
-        .reduce(function (result, attrib) {
-            if (attrib.indexOf('xmlns') === 0 && attrib !== 'xmlns:mp' && attrib !== 'xmlns:uap3') {
-                result.push(attrib.replace('xmlns', '').replace(':', ''));
-            }
+    if (!rootAttributes.includes('xmlns:uap')) throw 'Windows 10 is only supported';
 
-            return result;
-        }, []).sort();
+    const result = new AppxManifest(fileName);
 
-    var prefix = prefixes[prefixes.length - 1];
-    var Manifest = prefix === 'uap' ? Win10AppxManifest : AppxManifest;
-    var result = new Manifest(fileName, prefix);
-
-    if (!ignoreCache) {
-        manifestCache[fileName] = result;
-    }
+    if (!ignoreCache) manifestCache[fileName] = result;
 
     return result;
 };
@@ -158,8 +127,7 @@ AppxManifest.processChanges = function (changes) {
             return;
         }
 
-        var manifestsForChange = getManifestsForChange(change);
-        changes = changes.concat(demuxChangeWithSubsts(change, manifestsForChange));
+        changes = changes.concat(demuxChangeWithSubsts(change));
     });
 
     return changes;
@@ -185,7 +153,7 @@ AppxManifest.purgeCache = function (cacheKeys) {
 };
 
 AppxManifest.prototype.getPhoneIdentity = function () {
-    var phoneIdentity = this.doc.getroot().find('./mp:PhoneIdentity');
+    var phoneIdentity = this.doc.getroot().find('./PhoneIdentity');
     if (!phoneIdentity) { throw new Error('Failed to find PhoneIdentity element in appxmanifest at ' + this.path); }
 
     return {
@@ -314,12 +282,15 @@ AppxManifest.prototype.getApplication = function () {
 
     return {
         _node: application,
+
         getVisualElements: function () {
             return self.getVisualElements();
         },
+
         getId: function () {
             return application.attrib.Id;
         },
+
         setId: function (id) {
             if (!id) throw new TypeError('Application.Id attribute must be defined in appxmanifest at ' + this.path);
             // 64 symbols restriction goes from manifest schema definition
@@ -328,23 +299,28 @@ AppxManifest.prototype.getApplication = function () {
             application.attrib.Id = appId;
             return this;
         },
+
         getStartPage: function () {
             return application.attrib.StartPage;
         },
+
         setStartPage: function (page) {
             if (!page) page = 'www/index.html'; // Default valur is always index.html
             application.attrib.StartPage = page;
             return this;
         },
+
         getAccessRules: function () {
             return application
-                .findall('./ApplicationContentUriRules/Rule')
+                .findall('./uap:ApplicationContentUriRules/uap:Rule')
                 .map(function (rule) {
                     return rule.attrib.Match;
                 });
         },
+
         setAccessRules: function (rules) {
-            var appUriRules = application.find('ApplicationContentUriRules');
+            var appUriRules = application.find('./uap:ApplicationContentUriRules');
+
             if (appUriRules) {
                 application.remove(appUriRules);
             }
@@ -354,11 +330,11 @@ AppxManifest.prototype.getApplication = function () {
                 return;
             }
 
-            appUriRules = new et.Element('ApplicationContentUriRules');
+            appUriRules = new et.Element('uap:ApplicationContentUriRules');
             application.append(appUriRules);
 
             rules.forEach(function (rule) {
-                appUriRules.append(new et.Element('Rule', { Match: rule, Type: 'include' }));
+                appUriRules.append(new et.Element('uap:Rule', { Match: rule, Type: 'include', WindowsRuntimeAccess: 'all' }));
             });
 
             return this;
@@ -367,34 +343,52 @@ AppxManifest.prototype.getApplication = function () {
 };
 
 AppxManifest.prototype.getVisualElements = function () {
-    var self = this;
-    var visualElements = this.doc.getroot().find('./Applications/Application/' +
-        this.prefix + 'VisualElements');
+    var visualElements = this.doc.getroot().find('./Applications/Application/uap:VisualElements');
 
     if (!visualElements) { throw new Error('Failed to find "VisualElements" node. The appxmanifest at ' + this.path + ' is invalid'); }
 
     return {
         _node: visualElements,
+
+        getDefaultTitle: function () {
+            const defaultTitle = visualElements.find('./uap:DefaultTile');
+
+            return {
+                getShortName: function () {
+                    return defaultTitle.attrib.ShortName;
+                },
+
+                setShortName: function (name) {
+                    if (!name) throw new TypeError('Argument for "setDisplayName" must be defined in appxmanifest at ' + this.path);
+                    defaultTitle.attrib.ShortName = name;
+                    return this;
+                }
+            };
+        },
+
         getDisplayName: function () {
             return visualElements.attrib.DisplayName;
         },
+
         setDisplayName: function (name) {
             if (!name) throw new TypeError('VisualElements.DisplayName attribute must be defined in appxmanifest at ' + this.path);
             visualElements.attrib.DisplayName = name;
             return this;
         },
+
         getOrientation: function () {
-            return visualElements.findall(self.prefix + 'Rotation')
+            return visualElements.findall('uap:Rotation')
                 .map(function (element) {
                     return element.attrib.Preference;
                 });
         },
+
         setOrientation: function (orientation) {
             if (!orientation || orientation === '') {
                 orientation = 'default';
             }
 
-            var rotationPreferenceRootName = self.prefix + 'InitialRotationPreference';
+            var rotationPreferenceRootName = 'uap:InitialRotationPreference';
             var rotationPreferenceRoot = visualElements.find('./' + rotationPreferenceRootName);
 
             if (!orientation && rotationPreferenceRoot) {
@@ -412,41 +406,40 @@ AppxManifest.prototype.getVisualElements = function () {
 
             var orientations = KNOWN_ORIENTATIONS[orientation] || orientation.split(',');
             orientations.forEach(function (orientation) {
-                var el = new et.Element(self.prefix + 'Rotation', { Preference: orientation });
+                var el = new et.Element('uap:Rotation', { Preference: orientation });
                 rotationPreferenceRoot.append(el);
             });
 
             return this;
         },
+
         getBackgroundColor: function () {
             return visualElements.attrib.BackgroundColor;
         },
+
         setBackgroundColor: function (color) {
             if (!color) { throw new TypeError('VisualElements.BackgroundColor attribute must be defined in appxmanifest at ' + this.path); }
 
             visualElements.attrib.BackgroundColor = refineColor(color);
             return this;
         },
+
         trySetBackgroundColor: function (color) {
             try {
                 return this.setBackgroundColor(color);
             } catch (e) { return this; }
         },
-        getForegroundText: function () {
-            return visualElements.attrib.ForegroundText;
-        },
-        setForegroundText: function (color) {
-            // If color is not set, fall back to 'light' by default
-            visualElements.attrib.ForegroundText = color || 'light';
 
-            return this;
-        },
+        getForegroundText: function () { },
+        setForegroundText: function (color) { return this; },
+
         getSplashBackgroundColor: function () {
-            var splashNode = visualElements.find('./' + self.prefix + 'SplashScreen');
+            var splashNode = visualElements.find('./uap:SplashScreen');
             return splashNode && splashNode.attrib.BackgroundColor;
         },
+
         setSplashBackgroundColor: function (color) {
-            var splashNode = visualElements.find('./' + self.prefix + 'SplashScreen');
+            var splashNode = visualElements.find('./uap:SplashScreen');
             if (splashNode) {
                 if (color) {
                     splashNode.attrib.BackgroundColor = refineColor(color);
@@ -457,29 +450,21 @@ AppxManifest.prototype.getVisualElements = function () {
             return this;
         },
         getSplashScreenExtension: function (extension) {
-            var splashNode = visualElements.find('./' + self.prefix + 'SplashScreen');
+            var splashNode = visualElements.find('./uap:SplashScreen');
             return splashNode && splashNode.attrib.Image && path.extname(splashNode.attrib.Image);
         },
         setSplashScreenExtension: function (extension) {
-            var splashNode = visualElements.find('./' + self.prefix + 'SplashScreen');
+            var splashNode = visualElements.find('./uap:SplashScreen');
             if (splashNode) {
                 var oldPath = splashNode.attrib.Image;
                 splashNode.attrib.Image = path.dirname(oldPath) + '\\' + path.basename(oldPath, path.extname(oldPath)) + extension;
             }
             return this;
         },
-        getToastCapable: function () {
-            return visualElements.attrib.ToastCapable;
-        },
-        setToastCapable: function (isToastCapable) {
-            if (isToastCapable === true || isToastCapable.toString().toLowerCase() === 'true') {
-                visualElements.attrib.ToastCapable = 'true';
-            } else {
-                delete visualElements.attrib.ToastCapable;
-            }
 
-            return this;
-        },
+        getToastCapable: function () { },
+        setToastCapable: function (isToastCapable) { return this; },
+
         getDescription: function () {
             return visualElements.attrib.Description;
         },
@@ -502,49 +487,17 @@ AppxManifest.prototype.getCapabilities = function () {
         });
 };
 
-function demuxChangeWithSubsts (change, manifestFiles) {
-    return manifestFiles.map(function (file) {
-        return createReplacement(file, change);
-    });
-}
-
-function getManifestsForChange (change) {
-    var hasTarget = (typeof change.deviceTarget !== 'undefined');
-    var hasVersion = (typeof change.versions !== 'undefined');
-
-    var targetDeviceSet = hasTarget ? change.deviceTarget : 'all';
-
-    if (TARGETS.indexOf(targetDeviceSet) === -1) {
-        // target-device couldn't be resolved, fix it up here to a valid value
-        targetDeviceSet = 'all';
-    }
-
-    // No semver/device-target for this config-file, pass it through
-    if (!(hasTarget || hasVersion)) {
-        return SUBSTS;
-    }
-
-    var knownWindowsVersionsForTargetDeviceSet = Object.keys(MANIFESTS[targetDeviceSet]);
-    return knownWindowsVersionsForTargetDeviceSet.reduce(function (manifestFiles, winver) {
-        if (hasVersion && !semver.satisfies(winver, change.versions)) {
-            return manifestFiles;
-        }
-        return manifestFiles.concat(MANIFESTS[targetDeviceSet][winver]);
-    }, []);
-}
-
 // This is a local function that creates the new replacement representing the
 // mutation.  Used to save code further down.
-function createReplacement (manifestFile, originalChange) {
-    var replacement = {
-        target: manifestFile,
-        parent: originalChange.parent,
-        after: originalChange.after,
-        xmls: originalChange.xmls,
-        versions: originalChange.versions,
-        deviceTarget: originalChange.deviceTarget
+function demuxChangeWithSubsts (change) {
+    return {
+        target: MANIFEST,
+        parent: change.parent,
+        after: change.after,
+        xmls: change.xmls,
+        versions: change.versions,
+        deviceTarget: change.deviceTarget
     };
-    return replacement;
 }
 
 function isCSSColorName (color) {
@@ -591,21 +544,9 @@ AppxManifest.prototype.setPackageName = function (name) {
 AppxManifest.prototype.setAppName = function (name) {
     this.getProperties().setDisplayName(name);
     this.getVisualElements().setDisplayName(name);
+    this.getVisualElements().getDefaultTitle().setShortName(name);
 
     return this;
-};
-
-/**
- * Writes manifest to disk syncronously. If filename is specified, then manifest
- *   will be written to that file
- *
- * @param   {String}  [destPath]  File to write manifest to. If omitted,
- *   manifest will be written to file it has been read from.
- */
-AppxManifest.prototype.write = function (destPath) {
-    // sort Capability elements as per CB-5350 Windows8 build fails due to invalid 'Capabilities' definition
-    sortCapabilities(this.doc);
-    fs.writeFileSync(destPath || this.path, this.doc.write({ indent: 4 }), 'utf-8');
 };
 
 /**
@@ -637,93 +578,11 @@ function sortCapabilities (manifest) {
     });
 }
 
-function Win10AppxManifest (path) {
-    AppxManifest.call(this, path, /* prefix= */'uap');
-}
-
-util.inherits(Win10AppxManifest, AppxManifest);
-
-Win10AppxManifest.prototype.getApplication = function () {
-    // Call overridden method
-    var result = AppxManifest.prototype.getApplication.call(this);
-    var application = result._node;
-
-    result.getAccessRules = function () {
-        return application
-            .findall('./uap:ApplicationContentUriRules/uap:Rule')
-            .map(function (rule) {
-                return rule.attrib.Match;
-            });
-    };
-
-    result.setAccessRules = function (rules) {
-        var appUriRules = application.find('./uap:ApplicationContentUriRules');
-        if (appUriRules) {
-            application.remove(appUriRules);
-        }
-
-        // No rules defined
-        if (!rules || rules.length === 0) {
-            return;
-        }
-
-        appUriRules = new et.Element('uap:ApplicationContentUriRules');
-        application.append(appUriRules);
-
-        rules.forEach(function (rule) {
-            appUriRules.append(new et.Element('uap:Rule', { Match: rule, Type: 'include', WindowsRuntimeAccess: 'all' }));
-        });
-
-        return this;
-    };
-
-    return result;
-};
-
-Win10AppxManifest.prototype.getVisualElements = function () {
-    // Call base method and extend its results
-    var result = AppxManifest.prototype.getVisualElements.call(this);
-    var defaultTitle = result._node.find('./uap:DefaultTile');
-
-    result.getDefaultTitle = function () {
-        return {
-            getShortName: function () {
-                return defaultTitle.attrib.ShortName;
-            },
-            setShortName: function (name) {
-                if (!name) throw new TypeError('Argument for "setDisplayName" must be defined in appxmanifest at ' + this.path);
-                defaultTitle.attrib.ShortName = name;
-                return this;
-            }
-        };
-    };
-
-    // ToastCapable attribute was removed in Windows 10.
-    // See https://msdn.microsoft.com/ru-ru/library/windows/apps/dn423310.aspx
-    result.getToastCapable = function () {};
-    result.setToastCapable = function () { return this; };
-
-    // ForegroundText was removed in Windows 10 as well
-    result.getForegroundText = function () {};
-    result.setForegroundText = function () { return this; };
-
-    return result;
-};
-
-// Shortcut for multiple inner methods calls
-Win10AppxManifest.prototype.setAppName = function (name) {
-    // Call base method
-    AppxManifest.prototype.setAppName.call(this, name);
-    this.getVisualElements().getDefaultTitle().setShortName(name);
-
-    return this;
-};
-
 /**
  * Checks for capabilities which are Restricted in Windows 10 UAP.
  * @return {string[]|false} An array of restricted capability names, or false.
  */
-Win10AppxManifest.prototype.getRestrictedCapabilities = function () {
+AppxManifest.prototype.getRestrictedCapabilities = function () {
     var restrictedCapabilities = this.getCapabilities()
         .filter(function (capability) {
             return UAP_RESTRICTED_CAPS.indexOf(capability.name) >= 0;
@@ -739,9 +598,9 @@ Win10AppxManifest.prototype.getRestrictedCapabilities = function () {
  * @param  {Object[]}  dependencies  Array of arbitrary object, which fields
  *   will be used to set each dependency attributes.
  *
- * @returns {Win10AppxManifest}  self instance
+ * @returns {AppxManifest}  self instance
  */
-Win10AppxManifest.prototype.setDependencies = function (dependencies) {
+AppxManifest.prototype.setDependencies = function (dependencies) {
     var dependenciesElement = this.doc.find('./Dependencies');
 
     if ((!dependencies || dependencies.length === 0) && dependenciesElement) {
@@ -770,11 +629,11 @@ Win10AppxManifest.prototype.setDependencies = function (dependencies) {
  * @param   {String}  [destPath]  File to write manifest to. If omitted,
  *   manifest will be written to file it has been read from.
  */
-Win10AppxManifest.prototype.write = function (destPath) {
+AppxManifest.prototype.write = function (destPath) {
     fs.writeFileSync(destPath || this.path, this.writeToString(), 'utf-8');
 };
 
-Win10AppxManifest.prototype.writeToString = function () {
+AppxManifest.prototype.writeToString = function () {
     ensureUapPrefixedCapabilities(this.doc.find('.//Capabilities'));
     ensureUniqueCapabilities(this.doc.find('.//Capabilities'));
     // sort Capability elements as per CB-5350 Windows8 build fails due to invalid 'Capabilities' definition
