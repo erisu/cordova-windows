@@ -17,11 +17,11 @@
     "apache"
   ],
   "scripts": {
+    "eslint": "eslint bin template spec",
     "test": "npm run eslint && npm run test-unit && npm run test-e2e",
-    "test-unit": "jasmine",
-    "test-e2e": "jasmine spec/e2e/endtoend.spec.js",
-    "cover": "nyc jasmine",
-    "eslint": "eslint bin && eslint template && eslint spec"
+    "test:coverage": "nyc jasmine --config=spec/coverage.json",
+    "test:e2e": "jasmine  --config=spec/e2e.json",
+    "test:unit": "jasmine --config=spec/unit.json"
   },
   "dependencies": {
     "cordova-common": "^3.1.0",

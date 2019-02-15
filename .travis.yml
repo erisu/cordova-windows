@@ -18,9 +18,17 @@ install:
   - npm install
   - npm install -g codecov
 
+before_script:
+  - echo "Node Version: `node -v`"
+  - echo "NPM Version: `npm -v`"
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then echo "MSBuild Version: `msbuild -version -nologo`"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then echo "MSBuild Path: `where msbuild`"; fi
+
 script:
-  - npm run eslint
   - npm run cover
+  # - IF NOT EXIST "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" ( echo "no vswhere" ) ELSE "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property installationPath -products * -all"
+  # - IF NOT EXIST "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" ( echo "no vswhere" ) ELSE "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property installationPath -all"
+  # - IF NOT EXIST "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" ( echo "no vswhere" ) ELSE "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property installationPath -legacy"
 
 after_script:
   - codecov
