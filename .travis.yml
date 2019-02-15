@@ -14,24 +14,26 @@ node_js:
   # - "8"
   - "10"
 
-# install:
-  # - npm install
-  # - npm install -g codecov
+install:
+  - npm install
+  - npm install -g codecov
 
 before_script:
-  - ls ./
-  - ls "C:\ProgramData"
-  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then dotnet --info; fi
-  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ls "%ProgramFiles(x86)%\Microsoft Visual Studio\"; fi
-  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property installationPath -products * -all; fi
-  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property installationPath -all; fi
-  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property installationPath -legacy; fi
-  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\MSBuild.exe" -version -nologo; fi
-  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then echo "MSBuild Path = %ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\MSBuild.exe"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then set TRAVIS_VS_PATH "C:\ProgramData\Microsoft Visual Studio\"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then set MSBUILDDIR "%TRAVIS_VS_PATH%\2017\BuildTools\MSBuild\15.0\Bin"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then set MSBUILDBIN "%MSBUILDDIR%\MSBuild.exe"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then echo "MSBuild Path = %MSBUILDBIN%"; fi
 
-# script:
-  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then npm run test:coverage:win; fi
-  # - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then npm run test:coverage; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then dotnet --info; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%TRAVIS_VS_PATH%\Installer\vswhere" -property installationPath -products * -all; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%TRAVIS_VS_PATH%\Installer\vswhere" -property installationPath -all; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%TRAVIS_VS_PATH%\Installer\vswhere" -property installationPath -legacy; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then %MSBUILDBIN% -version -nologo; fi
+  
 
-# after_script:
-  # - codecov
+script:
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then npm run test:coverage:win; fi
+  - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then npm run test:coverage; fi
+
+after_script:
+  - codecov
