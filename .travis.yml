@@ -20,7 +20,7 @@ node_js:
 
 before_script:
   - ls ./
-  - ls /
+  - ls "C:\ProgramData"
   # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then dotnet --info; fi
   # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ls "%ProgramFiles(x86)%\Microsoft Visual Studio\"; fi
   # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property installationPath -products * -all; fi
