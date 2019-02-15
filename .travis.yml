@@ -14,13 +14,13 @@ node_js:
   # - "8"
   - "10"
 
-install:
+# install:
   # - npm install
   # - npm install -g codecov
 
 before_script:
-  - ls "%ProgramFiles(x86)%"
-  - ls "%ProgramFiles%"
+  - ls ./
+  - ls /
   # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then dotnet --info; fi
   # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ls "%ProgramFiles(x86)%\Microsoft Visual Studio\"; fi
   # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property installationPath -products * -all; fi
@@ -29,9 +29,9 @@ before_script:
   # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\MSBuild.exe" -version -nologo; fi
   # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then echo "MSBuild Path = %ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\MSBuild.exe"; fi
 
-script:
+# script:
   # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then npm run test:coverage:win; fi
   # - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then npm run test:coverage; fi
 
-after_script:
+# after_script:
   # - codecov
