@@ -21,11 +21,15 @@ install:
 before_script:
   - node -v
   - npm -v
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then msbuild -version -nologo; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then where msbuild; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then dotnet --info; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\MSBuild.exe" -version -nologo; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then echo "MSBuild Path = %ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\MSBuild.exe"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property installationPath -products * -all; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property installationPath -all; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property installationPath -legacy; fi
 
 script:
-  - npm run test:coverage
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; npm run test:coverage
 
 after_script:
   - codecov
