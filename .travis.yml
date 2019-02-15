@@ -19,10 +19,10 @@ install:
   - npm install -g codecov
 
 before_script:
-  - echo "Node Version: `node -v`"
-  - echo "NPM Version: `npm -v`"
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then echo "MSBuild Version: `msbuild -version -nologo`"; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then echo "MSBuild Path: `where msbuild`"; fi
+  - node -v
+  - npm -v
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then msbuild -version -nologo; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then where msbuild; fi
 
 script:
   - npm run cover
