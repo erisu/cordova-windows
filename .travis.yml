@@ -19,17 +19,12 @@ install:
   - npm install -g codecov
 
 before_script:
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then set TRAVIS_VS_PATH "C:\ProgramData\Microsoft Visual Studio\"; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then set MSBUILDDIR "%TRAVIS_VS_PATH%\2017\BuildTools\MSBuild\15.0\Bin"; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then set MSBUILDBIN "%MSBUILDDIR%\MSBuild.exe"; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then echo "MSBuild Path = %MSBUILDBIN%"; fi
-
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then dotnet --info; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%TRAVIS_VS_PATH%\Installer\vswhere" -property installationPath -products * -all; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%TRAVIS_VS_PATH%\Installer\vswhere" -property installationPath -all; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%TRAVIS_VS_PATH%\Installer\vswhere" -property installationPath -legacy; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then %MSBUILDBIN% -version -nologo; fi
-  
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "C:\ProgramData\Microsoft Visual Studio\Installer\vswhere" -property installationPath -products * -all; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "C:\ProgramData\Microsoft Visual Studio\Installer\vswhere" -property installationPath -all; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "C:\ProgramData\Microsoft Visual Studio\Installer\vswhere" -property installationPath -legacy; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then echo "MSBuild Path = C:\ProgramData\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\MSBuild.exe"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "C:\ProgramData\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\MSBuild.exe" -version -nologo; fi
 
 script:
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then npm run test:coverage:win; fi
