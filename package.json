@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "eslint": "eslint bin template spec",
-    "test": "npm run eslint && npm run test-unit && npm run test-e2e",
+    "test": "npm run eslint && npm run test:unit && npm run test:e2e",
     "test:coverage": "nyc jasmine --config=spec/coverage.json",
     "test:e2e": "jasmine  --config=spec/e2e.json",
     "test:unit": "jasmine --config=spec/unit.json"
