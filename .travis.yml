@@ -3,33 +3,35 @@ sudo: false
 
 os:
   - windows
-  - linux
-  - osx
+  # - linux
+  # - osx
 
 git:
   depth: 10
 
 node_js:
-  - "6"
-  - "8"
+  # - "6"
+  # - "8"
   - "10"
 
 install:
-  - npm install
-  - npm install -g codecov
+  # - npm install
+  # - npm install -g codecov
 
 before_script:
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then dotnet --info; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ls "%ProgramFiles(x86)%\Microsoft Visual Studio\"; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property installationPath -products * -all; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property installationPath -all; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property installationPath -legacy; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\MSBuild.exe" -version -nologo; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then echo "MSBuild Path = %ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\MSBuild.exe"; fi
+  - ls "%ProgramFiles(x86)%"
+  - ls "%ProgramFiles%"
+  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then dotnet --info; fi
+  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ls "%ProgramFiles(x86)%\Microsoft Visual Studio\"; fi
+  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property installationPath -products * -all; fi
+  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property installationPath -all; fi
+  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property installationPath -legacy; fi
+  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\MSBuild.exe" -version -nologo; fi
+  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then echo "MSBuild Path = %ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\MSBuild.exe"; fi
 
 script:
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then npm run test:coverage:win; fi
-  - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then npm run test:coverage; fi
+  # - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then npm run test:coverage:win; fi
+  # - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then npm run test:coverage; fi
 
 after_script:
-  - codecov
+  # - codecov
