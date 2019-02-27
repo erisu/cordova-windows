@@ -43,7 +43,7 @@ module.exports.run = function (options) {
         'archs': [String],
         'phone': Boolean,
         'win': Boolean
-    }, {'r': '--release'}, options.argv, 0);
+    }, { 'r': '--release' }, options.argv, 0);
 
     // Validate args
     if (options.debug && options.release) {

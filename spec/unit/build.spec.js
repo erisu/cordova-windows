@@ -376,7 +376,7 @@ describe('run method', function () {
 
         createFindAllAvailableVersionsMock([buildTools14, buildTools15, buildTools151]);
 
-        build.run({argv: ['']})
+        build.run({ argv: [''] })
             .fail(fail)
             .finally(function () {
                 expect(fail).not.toHaveBeenCalled();
