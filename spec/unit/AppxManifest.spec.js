@@ -96,36 +96,41 @@ describe('AppxManifest', function () {
     });
 
     describe('static get() method', function () {
-
         it('Test #008 : should return an AppxManifest instance', function () {
             expect(AppxManifest.get(WINDOWS_10_MANIFEST) instanceof AppxManifest).toBe(true);
         });
 
+        it('Test #011 : should throw error when a non Windows 10 AppxManifest is provided.', function () {
+            expect(() => {
+                AppxManifest.get('/no/prefixed');
+            }).toThrowError(/Only Windows 10 is Supported./);
+        });
+
         it('Test #011 : should cache AppxManifest instances by default', function () {
-            var manifest = AppxManifest.get('/no/prefixed');
+            var manifest = AppxManifest.get('/uap/prefixed');
             expect(xml.parseElementtreeSync.calls.count()).toBe(2);
 
-            var manifest2 = AppxManifest.get('/no/prefixed');
+            var manifest2 = AppxManifest.get('/uap/prefixed');
             expect(xml.parseElementtreeSync.calls.count()).toBe(2);
 
             expect(manifest).toBe(manifest2);
         });
 
         it('Test #012 : should not use cache to get AppxManifest instances when "ignoreCache" is specified', function () {
-            var manifest = AppxManifest.get('/no/prefixed');
+            var manifest = AppxManifest.get('/uap/prefixed');
             expect(xml.parseElementtreeSync.calls.count()).toBe(2);
 
-            var manifest2 = AppxManifest.get('/no/prefixed', true);
+            var manifest2 = AppxManifest.get('/uap/prefixed', true);
             expect(xml.parseElementtreeSync.calls.count()).toBe(4);
 
             expect(manifest).not.toBe(manifest2);
         });
 
         it('Test #013 : should not cache AppxManifest instances when "ignoreCache" is specified', function () {
-            var manifest = AppxManifest.get('/no/prefixed', true);
+            var manifest = AppxManifest.get('/uap/prefixed', true);
             expect(xml.parseElementtreeSync.calls.count()).toBe(2);
 
-            var manifest2 = AppxManifest.get('/no/prefixed');
+            var manifest2 = AppxManifest.get('/uap/prefixed');
             expect(xml.parseElementtreeSync.calls.count()).toBe(4);
 
             expect(manifest).not.toBe(manifest2);
@@ -137,13 +142,11 @@ describe('AppxManifest', function () {
 
         it('Test #014 : should exists', function () {
             var manifest = AppxManifest.get(WINDOWS_10_MANIFEST);
-            var emptyManifest = AppxManifest.get('/no/prefixed');
 
             methods.forEach(function (method) {
                 expect(manifest[method]).toBeDefined();
                 expect(manifest[method]).toEqual(jasmine.any(Function));
                 expect(function () { manifest[method](); }).not.toThrow();
-                expect(function () { emptyManifest[method](); }).toThrow();
                 expect(manifest[method]()).toBeDefined();
             });
         });

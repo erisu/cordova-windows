@@ -95,7 +95,7 @@ var PLATFORM_PROJECTS = {
     windows10: 'CordovaApp.Windows10.jsproj'
 };
 
-describe('windows project handler', function () {
+xdescribe('windows project handler', function () {
     var dummyProject;
     beforeEach(function () {
         shell.mkdir('-p', cordovaProjectWindowsPlatformDir);

@@ -17,23 +17,24 @@
     under the License.
 */
 
-var fs = require('fs');
-var et = require('elementtree');
-var path = require('path');
-var xml = require('cordova-common').xmlHelpers;
+const fs = require('fs');
+const et = require('elementtree');
+const path = require('path');
+const xml = require('cordova-common').xmlHelpers;
+const CordovaError = require('cordova-common').CordovaError;
 
-var UAP_RESTRICTED_CAPS = ['enterpriseAuthentication', 'sharedUserCertificates',
+const UAP_RESTRICTED_CAPS = ['enterpriseAuthentication', 'sharedUserCertificates',
     'documentsLibrary', 'musicLibrary', 'picturesLibrary',
     'videosLibrary', 'removableStorage', 'internetClientClientServer',
     'privateNetworkClientServer'];
 
 // UAP namespace capabilities come from the XSD type ST_Capability_Uap from AppxManifestTypes.xsd
-var CAPS_NEEDING_UAPNS = ['documentsLibrary', 'picturesLibrary', 'videosLibrary',
+const CAPS_NEEDING_UAPNS = ['documentsLibrary', 'picturesLibrary', 'videosLibrary',
     'musicLibrary', 'enterpriseAuthentication', 'sharedUserCertificates',
     'removableStorage', 'appointments', 'contacts', 'userAccountInformation',
     'phoneCall', 'blockedChatMessages', 'objects3D'];
 
-var KNOWN_ORIENTATIONS = {
+const KNOWN_ORIENTATIONS = {
     'default': ['portrait', 'landscape', 'landscapeFlipped'],
     'portrait': ['portrait'],
     'landscape': ['landscape', 'landscapeFlipped']
@@ -96,7 +97,7 @@ AppxManifest.get = function (fileName, ignoreCache) {
     const root = xml.parseElementtreeSync(fileName).getroot();
     const rootAttributes = Object.keys(root.attrib);
 
-    if (!rootAttributes.includes('xmlns:uap')) throw 'Windows 10 is only supported';
+    if (!rootAttributes.includes('xmlns:uap')) throw new CordovaError('Only Windows 10 is Supported.');
 
     const result = new AppxManifest(fileName);
 
