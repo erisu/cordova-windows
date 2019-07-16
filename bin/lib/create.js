@@ -31,7 +31,7 @@ module.exports.create = function (destinationDir, config, options) {
 
     const projectPath = path.resolve(destinationDir);
     if (fs.existsSync(projectPath)) {
-        return Promise.reject(new CordovaError('Project directory already exists:\n\t' + projectPath));
+        return Promise.reject(new CordovaError(`Project directory already exists:\n\t${projectPath}`));
     }
 
     // Set parameters/defaults for create
@@ -39,19 +39,12 @@ module.exports.create = function (destinationDir, config, options) {
     const appName = (config && config.name()) || 'CordovaAppProj';
 
     events.emit('log', 'Creating Cordova Windows Project:');
-    events.emit('log', '\tPath: ' + path.relative(process.cwd(), projectPath));
-    events.emit('log', '\tNamespace: ' + packageName);
-    events.emit('log', '\tName: ' + appName);
+    events.emit('log', `\tPath: ${path.relative(process.cwd(), projectPath)}`);
+    events.emit('log', `\tNamespace: ${packageName}`);
+    events.emit('log', `\tName: ${appName}`);
 
     const templateOverrides = options.customTemplate;
-    if (templateOverrides) {
-        events.emit('log', '\tCustomTemplatePath: ' + templateOverrides);
-    }
-
-    // 64 symbols restriction goes from manifest schema definition
-    // http://msdn.microsoft.com/en-us/library/windows/apps/br211415.aspx
-    const safeAppName = appName.length <= 64 ? appName : appName.substr(0, 64);
-    const guid = options.guid || uuid.v1();
+    if (templateOverrides) events.emit('log', `\tCustomTemplatePath: ${templateOverrides}`);
 
     // Make sure that the platform directory is created if missing.
     fs.ensureDirSync(projectPath);
@@ -92,7 +85,7 @@ module.exports.create = function (destinationDir, config, options) {
     fs.copySync(path.join(ROOT, 'bin', 'lib', 'check_reqs.js'), cordovaDir, { overwrite: false });
 
     if (templateOverrides && fs.existsSync(templateOverrides)) {
-        events.emit('verbose', 'Copying windows template overrides from ' + templateOverrides + ' to ' + projectPath);
+        events.emit('verbose', `Copying windows template overrides from ${templateOverrides} to ${projectPath}`);
         fs.copySync(templateOverrides, projectPath, { overwrite: false });
     }
 
@@ -107,11 +100,16 @@ module.exports.create = function (destinationDir, config, options) {
     fs.ensureDirSync(wwwWinJSDir);
     fs.copySync(srcBaseJsPath, wwwWinJSDir, { overwrite: false });
 
+    // 64 symbols restriction goes from manifest schema definition
+    // http://msdn.microsoft.com/en-us/library/windows/apps/br211415.aspx
+    const safeAppName = appName.length <= 64 ? appName : appName.substr(0, 64);
+    const guid = options.guid || uuid.v1();
+
     // replace specific values in manifests' templates
     events.emit('verbose', 'Updating manifest files with project configuration.');
     [ 'package.windows.appxmanifest', 'package.phone.appxmanifest',
         'package.windows10.appxmanifest' ]
-        .forEach(function (item) {
+        .forEach(item => {
             const manifest = AppxManifest.get(path.join(projectPath, item));
             if (manifest.hasPhoneIdentity) {
                 manifest.getPhoneIdentity().setPhoneProductId(guid);
@@ -123,10 +121,10 @@ module.exports.create = function (destinationDir, config, options) {
         });
 
     // Delete bld forder and bin folder
-    ['bld', 'bin', '*.user', '*.suo', 'MyTemplate.vstemplate'].forEach(function (file) {
+    ['bld', 'bin', '*.user', '*.suo', 'MyTemplate.vstemplate'].forEach(file => {
         fs.removeSync(path.join(projectPath, file));
     });
 
-    events.emit('log', 'Windows project created with ' + pkg.name + '@' + pkg.version);
+    events.emit('log', `Windows project created with ${pkg.name}@${pkg.version}`);
     return Promise.resolve();
 };
