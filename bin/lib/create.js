@@ -17,7 +17,7 @@
        under the License.
 */
 
-const fs = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
 const shell = require('shelljs');
 const uuid = require('node-uuid');
