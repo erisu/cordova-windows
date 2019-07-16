@@ -17,39 +17,40 @@
        under the License.
 */
 
-var Q = require('q');
-var fs = require('fs');
-var path = require('path');
-var shell = require('shelljs');
-var uuid = require('node-uuid');
-var events = require('cordova-common').events;
-var CordovaError = require('cordova-common').CordovaError;
-var AppxManifest = require('../../template/cordova/lib/AppxManifest');
-var pkg = require('../../package');
+const Q = require('q');
+const fs = require('fs');
+const path = require('path');
+const shell = require('shelljs');
+const uuid = require('node-uuid');
+const { CordovaError, events } = require('cordova-common');
+const AppxManifest = require('../../template/cordova/lib/AppxManifest');
+const pkg = require('../../package');
 
 // Creates cordova-windows project at specified path with specified namespace, app name and GUID
 module.exports.create = function (destinationDir, config, options) {
     if (!destinationDir) return Q.reject('No destination directory specified.');
 
-    var projectPath = path.resolve(destinationDir);
+    const projectPath = path.resolve(destinationDir);
     if (fs.existsSync(projectPath)) {
         return Q.reject(new CordovaError('Project directory already exists:\n\t' + projectPath));
     }
 
     // Set parameters/defaults for create
-    var packageName = (config && config.packageName()) || 'Cordova.Example';
-    var appName = (config && config.name()) || 'CordovaAppProj';
+    const packageName = (config && config.packageName()) || 'Cordova.Example';
+    const appName = (config && config.name()) || 'CordovaAppProj';
+
     // 64 symbols restriction goes from manifest schema definition
     // http://msdn.microsoft.com/en-us/library/windows/apps/br211415.aspx
-    var safeAppName = appName.length <= 64 ? appName : appName.substr(0, 64);
-    var templateOverrides = options.customTemplate;
-    var guid = options.guid || uuid.v1();
-    var root = path.join(__dirname, '..', '..');
+    const safeAppName = appName.length <= 64 ? appName : appName.substr(0, 64);
+    const templateOverrides = options.customTemplate;
+    const guid = options.guid || uuid.v1();
+    const root = path.join(__dirname, '..', '..');
 
     events.emit('log', 'Creating Cordova Windows Project:');
     events.emit('log', '\tPath: ' + path.relative(process.cwd(), projectPath));
     events.emit('log', '\tNamespace: ' + packageName);
     events.emit('log', '\tName: ' + appName);
+
     if (templateOverrides) {
         events.emit('log', '\tCustomTemplatePath: ' + templateOverrides);
     }
@@ -61,7 +62,7 @@ module.exports.create = function (destinationDir, config, options) {
     // Duplicate cordova.js to platform_www otherwise it will get removed by prepare
     shell.cp('-rf', path.join(root, 'template/www/cordova.js'), path.join(projectPath, 'platform_www'));
     // Duplicate splashscreen.css to platform_www otherwise it will get removed by prepare
-    var cssDirectory = path.join(projectPath, 'platform_www', 'css');
+    const cssDirectory = path.join(projectPath, 'platform_www', 'css');
     recursiveCreateDirectory(cssDirectory);
     shell.cp('-rf', path.join(root, 'template/www/css/splashscreen.css'), cssDirectory);
 
@@ -73,7 +74,7 @@ module.exports.create = function (destinationDir, config, options) {
     shell.cp('-rf', path.join(root, 'VERSION'), projectPath);
 
     // copy node_modules to cordova directory
-    let nodeModulesDir = path.join(root, 'node_modules');
+    const nodeModulesDir = path.join(root, 'node_modules');
     if (fs.existsSync(nodeModulesDir)) {
         events.emit('verbose', 'Copying node_modules to ' + projectPath);
         shell.cp('-r', nodeModulesDir, path.join(projectPath, 'cordova'));
@@ -89,9 +90,9 @@ module.exports.create = function (destinationDir, config, options) {
     }
 
     // Copy base.js into the target project directory
-    var destinationDirectory = path.join(projectPath, 'platform_www', 'WinJS', 'js');
-    var destBaseJsPath = path.join(destinationDirectory, 'base.js');
-    var srcBaseJsPath = require.resolve('winjs/js/base');
+    const destinationDirectory = path.join(projectPath, 'platform_www', 'WinJS', 'js');
+    const destBaseJsPath = path.join(destinationDirectory, 'base.js');
+    const srcBaseJsPath = require.resolve('winjs/js/base');
     recursiveCreateDirectory(destinationDirectory);
     shell.cp('-f', srcBaseJsPath, destBaseJsPath);
 
@@ -104,7 +105,7 @@ module.exports.create = function (destinationDir, config, options) {
     [ 'package.windows.appxmanifest', 'package.phone.appxmanifest',
         'package.windows10.appxmanifest' ]
         .forEach(function (item) {
-            var manifest = AppxManifest.get(path.join(projectPath, item));
+            const manifest = AppxManifest.get(path.join(projectPath, item));
             if (manifest.hasPhoneIdentity) {
                 manifest.getPhoneIdentity().setPhoneProductId(guid);
             }
@@ -131,7 +132,7 @@ function recursiveCreateDirectory (targetPath, previousPath) {
         return;
     }
 
-    var parent = path.join(targetPath, '..');
+    const parent = path.join(targetPath, '..');
     if (!fs.existsSync(parent)) {
         recursiveCreateDirectory(parent, targetPath);
     }

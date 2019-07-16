@@ -19,11 +19,11 @@
        under the License.
 */
 
-var path = require('path');
-var ConfigParser = require('cordova-common').ConfigParser;
-var Api = require('../template/cordova/Api');
+const path = require('path');
+const { ConfigParser } = require('cordova-common');
+const Api = require('../template/cordova/Api');
 
-var argv = require('nopt')({
+const argv = require('nopt')({
     'help' : Boolean,
     'guid': String,
     'silent': Boolean,
@@ -44,12 +44,12 @@ if (argv.help || argv.argv.remain.length === 0) {
     process.exit(1);
 }
 
-var config = new ConfigParser(path.resolve(__dirname, '../template/config.xml'));
+const config = new ConfigParser(path.resolve(__dirname, '../template/config.xml'));
 
 if (argv.argv.remain[1]) config.setPackageName(argv.argv.remain[1]);
 if (argv.argv.remain[2]) config.setName(argv.argv.remain[2]);
 
-var options = {
+const options = {
     guid: argv.guid,
     customTemplate: argv.argv.remain[3]
 };
