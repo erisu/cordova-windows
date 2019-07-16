@@ -19,15 +19,15 @@
 
 const fs = require('fs-extra');
 const path = require('path');
-const shell = require('shelljs');
 const uuid = require('node-uuid');
 const { CordovaError, events } = require('cordova-common');
 const AppxManifest = require('../../template/cordova/lib/AppxManifest');
 const pkg = require('../../package');
+const ROOT = path.join(__dirname, '..', '..');
 
 // Creates cordova-windows project at specified path with specified namespace, app name and GUID
 module.exports.create = function (destinationDir, config, options) {
-    if (!destinationDir) return Promise.reject('No destination directory specified.');
+    if (!destinationDir) return Promise.reject(new CordovaError('No destination directory specified.'));
 
     const projectPath = path.resolve(destinationDir);
     if (fs.existsSync(projectPath)) {
@@ -38,66 +38,74 @@ module.exports.create = function (destinationDir, config, options) {
     const packageName = (config && config.packageName()) || 'Cordova.Example';
     const appName = (config && config.name()) || 'CordovaAppProj';
 
-    // 64 symbols restriction goes from manifest schema definition
-    // http://msdn.microsoft.com/en-us/library/windows/apps/br211415.aspx
-    const safeAppName = appName.length <= 64 ? appName : appName.substr(0, 64);
-    const templateOverrides = options.customTemplate;
-    const guid = options.guid || uuid.v1();
-    const root = path.join(__dirname, '..', '..');
-
     events.emit('log', 'Creating Cordova Windows Project:');
     events.emit('log', '\tPath: ' + path.relative(process.cwd(), projectPath));
     events.emit('log', '\tNamespace: ' + packageName);
     events.emit('log', '\tName: ' + appName);
 
+    const templateOverrides = options.customTemplate;
     if (templateOverrides) {
         events.emit('log', '\tCustomTemplatePath: ' + templateOverrides);
     }
 
+    // 64 symbols restriction goes from manifest schema definition
+    // http://msdn.microsoft.com/en-us/library/windows/apps/br211415.aspx
+    const safeAppName = appName.length <= 64 ? appName : appName.substr(0, 64);
+    const guid = options.guid || uuid.v1();
+
+    // Make sure that the platform directory is created if missing.
+    fs.ensureDirSync(projectPath);
+
     // Copy the template source files to the new destination
-    events.emit('verbose', 'Copying windows template project to ' + projectPath);
-    shell.cp('-rf', path.join(root, 'template', '*'), projectPath);
+    events.emit('verbose', `Copying windows template project to ${projectPath}`);
+    fs.copySync(path.join(ROOT, 'template'), projectPath, { overwrite: false });
 
     // Duplicate cordova.js to platform_www otherwise it will get removed by prepare
-    shell.cp('-rf', path.join(root, 'template/www/cordova.js'), path.join(projectPath, 'platform_www'));
-    // Duplicate splashscreen.css to platform_www otherwise it will get removed by prepare
-    const cssDirectory = path.join(projectPath, 'platform_www', 'css');
-    recursiveCreateDirectory(cssDirectory);
-    shell.cp('-rf', path.join(root, 'template/www/css/splashscreen.css'), cssDirectory);
+    // Make sure that the platform directory is created if missing.
+    const platformWwwDir = path.join(projectPath, 'platform_www');
+    fs.ensureDirSync(platformWwwDir);
+    fs.copySync(path.join(ROOT, 'template/www/cordova.js'), platformWwwDir, { overwrite: false });
 
     // Copy cordova-js-src directory
     events.emit('verbose', 'Copying cordova-js sources to platform_www');
-    shell.cp('-rf', path.join(root, 'cordova-js-src'), path.join(projectPath, 'platform_www'));
+    fs.copySync(path.join(ROOT, 'cordova-js-src'), platformWwwDir, { overwrite: false });
+
+    // Duplicate splashscreen.css to platform_www otherwise it will get removed by prepare
+    const cssDir = path.join(platformWwwDir, 'css');
+    fs.ensureDirSync(cssDir);
+    fs.copySync(path.join(ROOT, 'template/www/css/splashscreen.css'), cssDir, { overwrite: false });
 
     // Copy our unique VERSION file, so peeps can tell what version this project was created from.
-    shell.cp('-rf', path.join(root, 'VERSION'), projectPath);
+    fs.copySync(path.join(ROOT, 'VERSION'), projectPath, { overwrite: false });
 
     // copy node_modules to cordova directory
-    const nodeModulesDir = path.join(root, 'node_modules');
+    const nodeModulesDir = path.join(ROOT, 'node_modules');
     if (fs.existsSync(nodeModulesDir)) {
-        events.emit('verbose', 'Copying node_modules to ' + projectPath);
-        shell.cp('-r', nodeModulesDir, path.join(projectPath, 'cordova'));
+        events.emit('verbose', `Copying node_modules to ${projectPath}`);
+        fs.copySync(path.join(ROOT, 'node_modules'), path.join(projectPath, 'cordova', 'node_modules'), { overwrite: false });
     }
 
     // copy check_reqs module to cordova directory
-    shell.cp('-rf', path.join(root, 'bin', 'check_reqs*'), path.join(projectPath, 'cordova'));
-    shell.cp('-rf', path.join(root, 'bin', 'lib', 'check_reqs*'), path.join(projectPath, 'cordova', 'lib'));
+    const cordovaDir = path.join(projectPath, 'cordova');
+    fs.copySync(path.join(ROOT, 'bin', 'check_reqs'), cordovaDir, { overwrite: false });
+    fs.copySync(path.join(ROOT, 'bin', 'check_reqs.bat'), cordovaDir, { overwrite: false });
+    fs.copySync(path.join(ROOT, 'bin', 'lib', 'check_reqs.js'), cordovaDir, { overwrite: false });
 
     if (templateOverrides && fs.existsSync(templateOverrides)) {
         events.emit('verbose', 'Copying windows template overrides from ' + templateOverrides + ' to ' + projectPath);
-        shell.cp('-rf', templateOverrides, projectPath);
+        fs.copySync(templateOverrides, projectPath, { overwrite: false });
     }
 
     // Copy base.js into the target project directory
-    const destinationDirectory = path.join(projectPath, 'platform_www', 'WinJS', 'js');
-    const destBaseJsPath = path.join(destinationDirectory, 'base.js');
+    const destinationDirectory = path.join(platformWwwDir, 'WinJS', 'js');
     const srcBaseJsPath = require.resolve('winjs/js/base');
-    recursiveCreateDirectory(destinationDirectory);
-    shell.cp('-f', srcBaseJsPath, destBaseJsPath);
+    fs.ensureDirSync(destinationDirectory);
+    fs.copySync(srcBaseJsPath, destinationDirectory, { overwrite: false });
 
     // CB-12042 Also copy base.js to www directory
-    shell.mkdir('-p', path.join(projectPath, 'www/WinJS/js'));
-    shell.cp('-f', srcBaseJsPath, path.join(projectPath, 'www/WinJS/js/base.js'));
+    const wwwWinJSDir = path.join(projectPath, 'www/WinJS/js');
+    fs.ensureDirSync(wwwWinJSDir);
+    fs.copySync(srcBaseJsPath, wwwWinJSDir, { overwrite: false });
 
     // replace specific values in manifests' templates
     events.emit('verbose', 'Updating manifest files with project configuration.');
@@ -116,25 +124,9 @@ module.exports.create = function (destinationDir, config, options) {
 
     // Delete bld forder and bin folder
     ['bld', 'bin', '*.user', '*.suo', 'MyTemplate.vstemplate'].forEach(function (file) {
-        shell.rm('-rf', path.join(projectPath, file));
+        fs.removeSync(path.join(projectPath, file));
     });
 
     events.emit('log', 'Windows project created with ' + pkg.name + '@' + pkg.version);
     return Promise.resolve();
 };
-
-function recursiveCreateDirectory (targetPath, previousPath) {
-    if (previousPath === targetPath) {
-        // Shouldn't ever happen because we're already in a created directory
-        // This is just here to prevent any potential infinite loop / stack overflow condition
-        console.warn('Could not create a directory because its root was never located.');
-        return;
-    }
-
-    const parent = path.join(targetPath, '..');
-    if (!fs.existsSync(parent)) {
-        recursiveCreateDirectory(parent, targetPath);
-    }
-
-    fs.mkdirSync(targetPath);
-}
